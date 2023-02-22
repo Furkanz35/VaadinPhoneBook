@@ -1,26 +1,31 @@
 package com.linxa.phonebook.domainobject;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import java.math.BigInteger;
 import java.util.Objects;
 
 public class Person {
+    @NotEmpty
     private String name;
-    private String phoneNumber;
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Person person = (Person) o;
-        return phoneNumber.equals(person.phoneNumber);
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", emailAddress='" + emailAddress + '\'' +
+                ", country='" + country + '\'' +
+                ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
+                '}';
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(phoneNumber);
-    }
-
+    @NotEmpty
+    private String  phoneNumber;
+    @Email
     private String emailAddress;
     private String country;
     private String street;
@@ -28,7 +33,7 @@ public class Person {
 
 
     public String getName() {
-        return name;
+        return name == null ? "" : name;
     }
 
     public void setName(String name) {
@@ -36,7 +41,7 @@ public class Person {
     }
 
     public String getStreet() {
-        return street;
+        return street == null ? "" : street;
     }
 
     public void setStreet(String street) {
@@ -44,7 +49,7 @@ public class Person {
     }
 
     public String getCity() {
-        return city;
+        return city == null ? "" : city;
     }
 
     public void setCity(String city) {
@@ -52,7 +57,7 @@ public class Person {
     }
 
     public String getCountry() {
-        return country;
+        return country == null ? "" : country;
     }
 
     public void setCountry(String country) {
@@ -60,7 +65,7 @@ public class Person {
     }
 
     public String getPhoneNumber() {
-        return phoneNumber;
+        return phoneNumber == null ? "" : phoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
@@ -68,16 +73,16 @@ public class Person {
     }
 
     public String getEmailAddress() {
-        return emailAddress;
+        return emailAddress == null ? "" : emailAddress;
     }
 
     public Person(String name, String phoneNumber, String emailAddress, String country, String street, String city) {
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.emailAddress = emailAddress;
-        this.country = country;
-        this.street = street;
-        this.city = city;
+         this.name = name;
+         this.phoneNumber = phoneNumber;
+         this.emailAddress = emailAddress;
+         this.country = country;
+         this.street = street;
+         this.city = city;
     }
 
     public Person(String name, String phoneNumber, String emailAddress) {
@@ -96,36 +101,29 @@ public class Person {
         this.emailAddress = emailAddress;
     }
 
-    private boolean validatePhoneNumber(String phoneNumber) {
-        if(null == phoneNumber)
-            return false;
 
-        return isNumeric(phoneNumber);
+//    private boolean validateEmailAddress(String emailAddress) {
+//        boolean result = true;
+//
+//        try {
+//            InternetAddress email = new InternetAddress(emailAddress);
+//            email.validate();
+//        } catch (AddressException e) {
+//            result = false;
+//        }
+//        return result;
+//    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return phoneNumber.equals(person.phoneNumber);
     }
 
-/*    private boolean validateEmailAddress(String emailAddress) {
-        boolean result = true;
-
-        try {
-            InternetAddress email = new InternetAddress(emailAddress);
-            email.validate();
-        } catch (AddressException e) {
-            result = false;
-        }
-        return result;
-    }
-
-
-    private boolean isValidateContact(String phoneNumber, String emailAddress){
-        if(validateEmailAddress(emailAddress) && validatePhoneNumber(phoneNumber))
-    }*/
-
-    private static boolean isNumeric(String str) {
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch(NumberFormatException e){
-            return false;
-        }
+    @Override
+    public int hashCode() {
+        return Objects.hash(phoneNumber);
     }
 }

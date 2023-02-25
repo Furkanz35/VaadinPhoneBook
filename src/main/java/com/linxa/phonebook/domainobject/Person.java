@@ -1,31 +1,10 @@
 package com.linxa.phonebook.domainobject;
 
-
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import java.math.BigInteger;
 import java.util.Objects;
 
 public class Person {
-    @NotEmpty
     private String name;
-
-    @Override
-    public String toString() {
-        return "Person{" +
-                "name='" + name + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
-                ", country='" + country + '\'' +
-                ", street='" + street + '\'' +
-                ", city='" + city + '\'' +
-                '}';
-    }
-
-    @NotEmpty
     private String  phoneNumber;
-    @Email
     private String emailAddress;
     private String country;
     private String street;
@@ -76,6 +55,9 @@ public class Person {
         return emailAddress == null ? "" : emailAddress;
     }
 
+    public Person() {
+    }
+
     public Person(String name, String phoneNumber, String emailAddress, String country, String street, String city) {
          this.name = name;
          this.phoneNumber = phoneNumber;
@@ -101,19 +83,6 @@ public class Person {
         this.emailAddress = emailAddress;
     }
 
-
-//    private boolean validateEmailAddress(String emailAddress) {
-//        boolean result = true;
-//
-//        try {
-//            InternetAddress email = new InternetAddress(emailAddress);
-//            email.validate();
-//        } catch (AddressException e) {
-//            result = false;
-//        }
-//        return result;
-//    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -125,5 +94,17 @@ public class Person {
     @Override
     public int hashCode() {
         return Objects.hash(phoneNumber);
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", emailAddress='" + emailAddress + '\'' +
+                ", country='" + country + '\'' +
+                ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
+                '}';
     }
 }

@@ -11,19 +11,20 @@ public class PhoneBookManager implements RecordBookManager{
             return false;
         }
         boolean flag = Contact.getContactMap().putIfAbsent(person.getPhoneNumber(), person) == null;
-        if(flag) {
-            System.out.println("New person was added to Contacts ---> " + person.getName());
-        }
-        else {
-            System.err.println("There is already a contact with this number --> " + person.getPhoneNumber());
-        }
+        Contact.getContactList().forEach(System.out::println);
+        System.out.println("Size of contactList = " + Contact.getContactList().size());
+        System.out.println("---------------------------");
         return flag;
     }
 
     @Override
     public void deleteFromRecordBook(Person person) {
-            Contact.getContactMap().remove(person.getPhoneNumber(), person);
-            System.out.println("Selected contact was removed ->" + person.getName());
+        Contact.getContactMap().remove(person.getPhoneNumber(), person);
+        Contact.getContactList().forEach(System.out::println);
+        System.out.println("Size of contactList = " + Contact.getContactList().size());
+        System.out.println("---------------------------");
+        System.out.println("Selected contact was removed ->" + person.getName());
+
     }
 
     @Override
@@ -34,15 +35,23 @@ public class PhoneBookManager implements RecordBookManager{
         }
             if (personToBeEdited.getPhoneNumber().equals(personUpgraded.getPhoneNumber())) {
                 Contact.getContactMap().put(personUpgraded.getPhoneNumber(), personUpgraded);
+                Contact.getContactList().forEach(System.out::println);
+                System.out.println("Size of contactList = " + Contact.getContactList().size());
+                System.out.println("---------------------------");
                 return 1;
             } else if (isTheNumberUnique(personUpgraded)) {
                 deleteFromRecordBook(personToBeEdited);
                 addToRecordBook(personUpgraded);
+                Contact.getContactList().forEach(System.out::println);
+                System.out.println("Size of contactList = " + Contact.getContactList().size());
+                System.out.println("---------------------------");
+
                 return 1;
             } else {
               return 2;
             }
     }
+
     private Boolean isTheNumberUnique(Person person) {
         return !Contact.getContactMap().containsKey(person.getPhoneNumber());
     }

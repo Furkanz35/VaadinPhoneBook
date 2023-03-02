@@ -1,58 +1,71 @@
 package com.linxa.phonebook.bookmanager;
 
+import com.linxa.phonebook.database.ContactsDataBase;
+import com.linxa.phonebook.domainobject.ContactStorage;
 import com.linxa.phonebook.domainobject.Contact;
-import com.linxa.phonebook.domainobject.Person;
+import com.linxa.phonebook.exception.ContactEditException;
+import com.linxa.phonebook.ui.Error;
 
 public class PhoneBookManager implements RecordBookManager{
+
+
     @Override
-    public boolean addToRecordBook(Person person) {
-        if(person.getPhoneNumber().isEmpty() || person.getName().isEmpty()) {
-            System.err.println("Name and Number can not be empty");
-            return false;
+    public void addToRecordBook(Contact contact) throws ContactEditException {
+        if(ContactsDataBase.createContactToDataBase(contact)) {
+            ContactStorage.getContactMap().putIfAbsent(contact.getPhoneNumber(), contact);
         }
-        boolean flag = Contact.getContactMap().putIfAbsent(person.getPhoneNumber(), person) == null;
-        Contact.getContactList().forEach(System.out::println);
-        System.out.println("Size of contactList = " + Contact.getContactList().size());
-        System.out.println("---------------------------");
-        return flag;
-    }
-
-    @Override
-    public void deleteFromRecordBook(Person person) {
-        Contact.getContactMap().remove(person.getPhoneNumber(), person);
-        Contact.getContactList().forEach(System.out::println);
-        System.out.println("Size of contactList = " + Contact.getContactList().size());
-        System.out.println("---------------------------");
-        System.out.println("Selected contact was removed ->" + person.getName());
-
-    }
-
-    @Override
-    public int editRecord(Person personToBeEdited ,Person personUpgraded) {
-        if(personUpgraded.getPhoneNumber().isEmpty() || personUpgraded.getName().isEmpty()) {
-            System.err.println("Name and Number can not be empty");
-            return 0;
+        else {
+            System.err.println(Error.DATABASE_DELETION_PROBLEM);
+            throw new ContactEditException("The addition process could not be performed, " +
+                    "because the situation was occurred during contact addition to Database");
         }
-            if (personToBeEdited.getPhoneNumber().equals(personUpgraded.getPhoneNumber())) {
-                Contact.getContactMap().put(personUpgraded.getPhoneNumber(), personUpgraded);
-                Contact.getContactList().forEach(System.out::println);
-                System.out.println("Size of contactList = " + Contact.getContactList().size());
-                System.out.println("---------------------------");
-                return 1;
-            } else if (isTheNumberUnique(personUpgraded)) {
-                deleteFromRecordBook(personToBeEdited);
-                addToRecordBook(personUpgraded);
-                Contact.getContactList().forEach(System.out::println);
-                System.out.println("Size of contactList = " + Contact.getContactList().size());
-                System.out.println("---------------------------");
-
-                return 1;
-            } else {
-              return 2;
-            }
     }
 
-    private Boolean isTheNumberUnique(Person person) {
-        return !Contact.getContactMap().containsKey(person.getPhoneNumber());
+    @Override
+    public void deleteFromRecordBook(Contact contact) throws ContactEditException {
+        if(ContactsDataBase.deleteContactFromDataBase(contact)) {
+            ContactStorage.getContactMap().remove(contact.getPhoneNumber(), contact);
+        }
+        else {
+            System.err.println(Error.DATABASE_ADDITION_PROBLEM);
+            throw new ContactEditException("The deletion process could not be performed, " +
+                    "because the situation was occurred during contact deletion from Database");
+        }
+    }
+
+    @Override
+    public void editRecordWithSameNumber(Contact contactToBeEdited, Contact contactUpgraded) throws ContactEditException {
+        if(ContactsDataBase.editContactFromDataBase(contactToBeEdited, contactUpgraded)) {
+            ContactStorage.getContactMap().put(contactUpgraded.getPhoneNumber(), contactUpgraded);
+        }
+        else {
+            System.err.println(Error.DATABASE_UPDATE_PROBLEM);
+            throw new ContactEditException("The update process could not be performed, " +
+                    "because the situation was occurred during contact update process on Database");
+        }
+   }
+
+   @Override
+    public void editRecordWithDifferentNumber(Contact contactToBeEdited, Contact contactUpgraded) throws ContactEditException {
+       if(ContactsDataBase.editContactFromDataBase(contactToBeEdited, contactUpgraded)) {
+          deleteContactFromCache(contactToBeEdited);
+          addContactToCache(contactUpgraded);
+       }
+       else {
+           System.err.println(Error.DATABASE_UPDATE_PROBLEM);
+           throw new ContactEditException("The update process could not be performed, " +
+                   "because the situation was occurred during contact update process on Database");
+       }
+    }
+    public void addContactToCache(Contact contact) {
+        ContactStorage.getContactMap().putIfAbsent(contact.getPhoneNumber(), contact);
+    }
+
+    public void deleteContactFromCache(Contact contact) {
+        ContactStorage.getContactMap().remove(contact.getPhoneNumber(), contact);
+    }
+
+    public boolean isTheNumberUnique(Contact contact) {
+        return !ContactStorage.getContactMap().containsKey(contact.getPhoneNumber());
     }
 }

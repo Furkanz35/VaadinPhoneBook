@@ -1,6 +1,7 @@
 package com.linxa.phonebook.ui;
 
-import com.linxa.phonebook.domainobject.Person;
+import com.linxa.phonebook.domainobject.Contact;
+import com.linxa.phonebook.exception.ContactEditException;
 import com.linxa.phonebook.factory.PhoneBookManagerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
@@ -16,7 +17,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 
 public class ContactForm  extends FormLayout {
 
-    private final Binder<Person> binder = new Binder<>(Person.class);
+    private final Binder<Contact> binder = new Binder<>(Contact.class);
     TextField name = new TextField("Full Name");
     TextField phoneNumber = new TextField("Phone Number");
     TextField emailAddress = new TextField("Email");
@@ -26,7 +27,7 @@ public class ContactForm  extends FormLayout {
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button cancel = new Button("Cancel");
-    Person person;
+    Contact contact;
 
     public  ContactForm() {
         add(
@@ -42,13 +43,13 @@ public class ContactForm  extends FormLayout {
         setFormListeners();
 
         getBinder().forField(name).asRequired("Name area can not be empty")
-                .bind(Person::getName, Person::setName);
+                .bind(Contact::getName, Contact::setName);
         getBinder().forField(phoneNumber).asRequired("Number area can not be empty")
-                .bind(Person::getPhoneNumber, Person::setPhoneNumber);
-        getBinder().forField(emailAddress).bind(Person::getEmailAddress, Person::setEmailAddress);
-        getBinder().forField(country).bind(Person::getCountry, Person::setCountry);
-        getBinder().forField(city).bind(Person::getCity, Person::setCity);
-        getBinder().forField(street).bind(Person::getStreet, Person::setStreet);
+                .bind(Contact::getPhoneNumber, Contact::setPhoneNumber);
+        getBinder().forField(emailAddress).bind(Contact::getEmailAddress, Contact::setEmailAddress);
+        getBinder().forField(country).bind(Contact::getCountry, Contact::setCountry);
+        getBinder().forField(city).bind(Contact::getCity, Contact::setCity);
+        getBinder().forField(street).bind(Contact::getStreet, Contact::setStreet);
 
     }
 
@@ -69,67 +70,92 @@ public class ContactForm  extends FormLayout {
         setVisible(false);
     }
 
-    private void deleteSelectedContact(Person person) {
-        PhoneBookManagerFactory.getPhoneBookManager().deleteFromRecordBook(person);
-        Notification.show(person.getName() + " was removed from Contact List", 5000, Notification.Position.BOTTOM_CENTER);
-    }
-
-    private void editExistingPersonOnContact(Person person) {
-        int flag = PhoneBookManagerFactory.getPhoneBookManager().editRecord(this.person, person);
-        if(flag == 0){
-            Notification.show("Name and Number field can not be empty", 3000, Notification.Position.MIDDLE);
-        } else if (flag == 1) {
-            Notification.show(   person.getName() + " was upgraded", 5000, Notification.Position.BOTTOM_CENTER);
-        } else {
-            Notification.show("There is another user with this number, number field should be unique",
-                    5000, Notification.Position.MIDDLE);
+    private void deleteSelectedContact(Contact contact) {
+        try {
+            PhoneBookManagerFactory.getPhoneBookManager().deleteFromRecordBook(contact);
+            Notification.show(contact.getName() + " was removed from Contact List", 5000, Notification.Position.BOTTOM_CENTER);
+        }catch (ContactEditException e) {
+            Notification.show(String.valueOf(Error.DATABASE_DELETION_PROBLEM), 5000, Notification.Position.BOTTOM_CENTER);
+            e.printStackTrace();
         }
     }
 
-    private void addNewPersonToContact(Person person) {
-        boolean flag = PhoneBookManagerFactory.getPhoneBookManager().addToRecordBook(person);
-        if(flag) {
-            Notification.show(person.getName()+ " was added to Contact List", 5000, Notification.Position.BOTTOM_CENTER);
+    private void editExistingPersonOnContact(Contact contact) {
+
+        if(PhoneBookManagerFactory.getPhoneBookManager().isTheNumberUnique(contact)) {
+            try {
+                PhoneBookManagerFactory.getPhoneBookManager().editRecordWithDifferentNumber(this.contact, contact);
+                Notification.show(contact.getName() + " was upgraded", 5000, Notification.Position.BOTTOM_CENTER);
+            } catch (ContactEditException e) {
+                Notification.show(String.valueOf(Error.DATABASE_UPDATE_PROBLEM), 5000, Notification.Position.BOTTOM_CENTER);
+                e.printStackTrace();
+            }
         }
         else {
-            Notification.show("Name and Number field can not be empty", 3000, Notification.Position.MIDDLE);
+            if(this.contact.getPhoneNumber().equals(contact.getPhoneNumber())) {
+                try {
+                    PhoneBookManagerFactory.getPhoneBookManager().editRecordWithSameNumber(this.contact, contact);
+                    Notification.show(   contact.getName() + " was upgraded", 5000, Notification.Position.BOTTOM_CENTER);
+                } catch (ContactEditException e) {
+                    Notification.show(String.valueOf(Error.DATABASE_UPDATE_PROBLEM), 5000, Notification.Position.BOTTOM_CENTER);
+                    e.printStackTrace();
+                }
+            }
+            else {
+                Notification.show(Error.DUPLICATE_NUMBER.getError(),5000, Notification.Position.MIDDLE);
+            }
+        }
+    }
+
+    private void addNewPersonToContact(Contact contact) {
+        if(PhoneBookManagerFactory.getPhoneBookManager().isTheNumberUnique(contact)){
+            try {
+                PhoneBookManagerFactory.getPhoneBookManager().addToRecordBook(contact);
+                Notification.show(contact.getName()+ " was added to Contact List", 5000, Notification.Position.BOTTOM_CENTER);
+            } catch (ContactEditException e) {
+                Notification.show(String.valueOf(Error.DATABASE_ADDITION_PROBLEM), 5000, Notification.Position.BOTTOM_CENTER);
+                e.printStackTrace();
+            }
+
+        }
+        else {
+            Notification.show(Error.DUPLICATE_NUMBER.getError(), 3000, Notification.Position.MIDDLE);
         }
         closeForm();
-
     }
 
     private void setFormListeners(){
         delete.addClickListener(event -> {
-            if(person == null)
+            if(contact == null)
                 closeForm();
             else {
-                System.out.println(person.getName() + " was deleted.");
-                deleteSelectedContact(person);
+                System.out.println(contact.getName() + " was deleted.");
+                deleteSelectedContact(contact);
             }
         });
 
 
         cancel.addClickListener(event -> {
-            person = null;
+            contact = null;
             closeForm();
         });
 
 
         save.addClickListener(event -> {
-            if(person == null) {
-                person = new Person();
+            if(contact == null) {
+                contact = new Contact();
                 try {
-                    binder.writeBean(person);
-                    addNewPersonToContact(person);
+                    binder.writeBean(contact);
+                    addNewPersonToContact(contact);
                 } catch (ValidationException e) {
                     e.printStackTrace();
                     Notification.show(
-                            "Name and Number fields must be filled during addition",
+                            Error.EMPTY_NUMBER_OR_NAME.getError(),
                             5000, Notification.Position.MIDDLE);
                 }
             }
             else {
-                editExistingPersonOnContact( new Person(
+                editExistingPersonOnContact( new Contact(
                         name.getValue(),
                         phoneNumber.getValue(),
                         emailAddress.getValue(),
@@ -158,7 +184,7 @@ public class ContactForm  extends FormLayout {
         return new HorizontalLayout(save, delete, cancel);
     }
 
-    public Binder<Person> getBinder() {
+    public Binder<Contact> getBinder() {
         return binder;
     }
 

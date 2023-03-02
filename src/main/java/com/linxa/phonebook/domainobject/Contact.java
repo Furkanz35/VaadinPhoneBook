@@ -1,46 +1,99 @@
 package com.linxa.phonebook.domainobject;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class Contact {
+    private String name;
+    private String  phoneNumber;
+    private String emailAddress;
+    private String country;
+    private String street;
+    private String city;
 
-    private static final ConcurrentHashMap<String, Person> contactMap = new ConcurrentHashMap<>();
 
-    static
-    {
-        Contact.contactMap.put("5069732374", new Person("Haluk Zen gin", "5069732374","becauseIamBatman@batman.com",
-                "Turkey", "KSK", "İzmir" ));
-        Contact.contactMap.put("5312014858", new Person("Sniffer Imre", "5312014858", "whysoserious@joker.com"));
-        Contact.contactMap.put("+32941312412", new Person("Elif Mira Yank", "+32941312412", "goodMorningVietnam@linxa.com"));
-        Contact.contactMap.put("21312341231", new Person("Alperen Scar", "21312341231", "whatisinthebooxx@seven.com"));
-        Contact.contactMap.put("0513213023", new Person("Kismet Karma", "0513213023", "winteriscoming@got.com",
-                "France", "Rue de l'Abreuvoir", "Paris"));
-        Contact.contactMap.put("2141234123", new Person("Mustafa Hankering", "2141234123", "", "USA", "Miami", ""));
-        Contact.contactMap.put("6653624525234", new Person("Beyza Digitalized", "6653624525234", "myPrecious@lotr.com", "England"));
-        Contact.contactMap.put("423156123", new Person("Selman Alim", "423156123", "abracadabra@prestige.com"));
-        Contact.contactMap.put("657123813", new Person("Ayse Zengin", "657123813", "youWereTheChosenOne@starwars.com"));
-        Contact.contactMap.put("983247234123", new Person("Kardelen Enes", "983247234123"));
-
+    public String getName() {
+        return name == null ? "" : name;
     }
 
-    public static List<Person> getNumberFilteredContactList(String filter) {
-        return Contact.getContactList().stream().filter(p -> p.getPhoneNumber().toLowerCase().contains(filter.toLowerCase())).collect(Collectors.toList());
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public static List<Person> getNameFilteredContactList(String filter) {
-        return Contact.getContactList().stream().filter(p -> p.getName().toLowerCase().contains(filter.toLowerCase())).collect(Collectors.toList());
+    public String getStreet() {
+        return street == null ? "" : street;
     }
 
-    public static ConcurrentHashMap<String, Person> getContactMap() {
-        return contactMap;
+    public void setStreet(String street) {
+        this.street = street;
     }
 
-    public static List<Person> getContactList() {
-        List<Person> list = new ArrayList<>(getContactMap().values());
-        list.sort((Comparator.comparing(o -> o.getName().toLowerCase())));
-        return list;
+    public String getCity() {
+        return city == null ? "" : city;
     }
 
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country == null ? "" : country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber == null ? "" : phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress == null ? "" : emailAddress;
+    }
+
+    public Contact() {
+    }
+
+    public Contact(String name, String phoneNumber, String emailAddress, String country, String street, String city) {
+         this.name = name;
+         this.phoneNumber = phoneNumber;
+         this.emailAddress = emailAddress;
+         this.country = country;
+         this.street = street;
+         this.city = city;
+    }
+
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Contact contact = (Contact) o;
+        return phoneNumber.equals(contact.phoneNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(phoneNumber);
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", emailAddress='" + emailAddress + '\'' +
+                ", country='" + country + '\'' +
+                ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
+                '}';
+    }
 }

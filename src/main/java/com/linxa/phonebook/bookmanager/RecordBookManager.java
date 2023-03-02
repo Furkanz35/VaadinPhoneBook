@@ -1,13 +1,17 @@
 package com.linxa.phonebook.bookmanager;
 
-import com.linxa.phonebook.domainobject.Person;
+import com.linxa.phonebook.domainobject.Contact;
+
+
 public interface RecordBookManager {
 
-    boolean addToRecordBook(Person person);
+    void addToRecordBook(Contact contact) throws Exception;
 
-    void deleteFromRecordBook(Person person);
+    void deleteFromRecordBook(Contact contact) throws Exception;
 
-    int editRecord(Person personToBeEdited , Person personUpgraded);
+    void editRecordWithSameNumber(Contact contactToBeEdited, Contact contactUpgraded) throws Exception;
+
+    void editRecordWithDifferentNumber(Contact contactToBeEdited, Contact contactUpgraded) throws Exception;
 
 
 }
